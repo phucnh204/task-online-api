@@ -1,0 +1,13 @@
+{
+  "name": "trello-web-api",
+  "type": "module",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "repository": "https://github.com/phucnh204/trello-web-api.git",
+  "author": "phucnh204 <137475114+phucnh204@users.noreply.github.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "trello-web-api": "file:"
+  }
+}
