@@ -5,6 +5,7 @@ import { Column, ColumnDocument } from 'src/columns/schemas/column.schema';
 import { Card, CardDocument } from 'src/cards/schemas/card.schema';
 
 import { Model } from 'mongoose';
+import { CreateBoardDto } from './dto/create-board.dto';
 
 @Injectable()
 export class BoardsService {
@@ -27,7 +28,7 @@ export class BoardsService {
       .findById(boardId)
       .populate({
         path: 'columns',
-        options: { sort: { createdAt: 1 } }, // nếu cần sắp xếp
+        options: { sort: { createdAt: 1 } },
         populate: {
           path: 'cards',
           model: 'Card',
@@ -41,5 +42,25 @@ export class BoardsService {
     }
 
     return { board };
+  }
+
+  // Lấy danh sách board liên quan đến user
+  async getBoardsOfUser(userId: string) {
+    const boards = await this.boardModel.find({
+      $or: [{ ownerIds: userId }, { memberIds: userId }],
+    });
+
+    return boards;
+  }
+  async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
+    const board = new this.boardModel(createBoardDto);
+    return board.save();
+  }
+
+  async deleteBoard(id: string): Promise<{ message: string }> {
+    await this.boardModel.findByIdAndDelete(id);
+    await this.columnModel.deleteMany({ boardId: id }); // xóa các cột liên quan
+
+    return { message: 'Board deleted successfully' };
   }
 }

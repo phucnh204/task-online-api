@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Query,
+  Delete,
+} from '@nestjs/common';
 import { BoardsService } from './boards.service';
 import { Board } from './schemas/board.schema';
 import { CreateBoardDto } from './dto/create-board.dto';
@@ -9,7 +17,7 @@ export class BoardsController {
 
   @Post()
   async createBoard(@Body() createBoardDto: CreateBoardDto) {
-    return this.boardsService.create(createBoardDto);
+    return this.boardsService.createBoard(createBoardDto);
   }
 
   @Get()
@@ -20,5 +28,16 @@ export class BoardsController {
   @Get(':id/full')
   getFullBoard(@Param('id') id: string) {
     return this.boardsService.getFullBoard(id);
+  }
+
+  @Get()
+  async getBoardsByUser(@Query('userId') userId: string) {
+    const boards = await this.boardsService.getBoardsOfUser(userId);
+    return boards;
+  }
+
+  @Delete(':id')
+  async deleteBoard(@Param('id') id: string) {
+    return this.boardsService.deleteBoard(id);
   }
 }
