@@ -1,13 +1,11 @@
-import { IsString, IsOptional, IsArray } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateColumnDto {
-  @IsString()
-  boardId: string;
-
+  @IsNotEmpty()
   @IsString()
   title: string;
 
-  @IsOptional()
-  @IsArray()
-  cardOrderIds?: string[];
+  @IsNotEmpty()
+  @IsString()
+  boardId: string;
 }

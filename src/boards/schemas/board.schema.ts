@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import mongoose from 'mongoose';
+import { Column } from 'src/columns/schemas/column.schema';
 
 export type BoardDocument = Board & Document;
 
@@ -21,13 +22,13 @@ export class Board {
   @Prop({ default: [] })
   memberIds: string[];
 
-  @Prop({ default: '#0079BF' }) // Màu mặc định nếu frontend không gửi
+  @Prop({ default: '#0079BF' })
   backgroundColor: string;
 
   // @Prop([{ type: String, ref: 'Column' }])
   // columns: string[];
-  @Prop({ type: [Types.ObjectId], ref: 'Column', default: [] })
-  columns: Types.ObjectId[];
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Column' })
+  columns: Column[];
 }
 
 export const BoardSchema = SchemaFactory.createForClass(Board);

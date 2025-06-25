@@ -6,6 +6,7 @@ import { Card, CardDocument } from 'src/cards/schemas/card.schema';
 
 import { Model } from 'mongoose';
 import { CreateBoardDto } from './dto/create-board.dto';
+import { UpdateBoardDto } from './dto/update-board.dto';
 
 @Injectable()
 export class BoardsService {
@@ -62,5 +63,25 @@ export class BoardsService {
     await this.columnModel.deleteMany({ boardId: id }); // xóa các cột liên quan
 
     return { message: 'Board deleted successfully' };
+  }
+
+  async updateBoard(
+    id: string,
+    updateBoardDto: UpdateBoardDto,
+  ): Promise<Board> {
+    const updatedBoard = await this.boardModel.findByIdAndUpdate(
+      id,
+      updateBoardDto,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+
+    if (!updatedBoard) {
+      throw new NotFoundException(`Board với id ${id} không tồn tại`);
+    }
+
+    return updatedBoard;
   }
 }

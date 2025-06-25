@@ -6,10 +6,12 @@ import {
   Param,
   Query,
   Delete,
+  Put,
 } from '@nestjs/common';
 import { BoardsService } from './boards.service';
 import { Board } from './schemas/board.schema';
 import { CreateBoardDto } from './dto/create-board.dto';
+import { UpdateBoardDto } from './dto/update-board.dto';
 
 @Controller('boards')
 export class BoardsController {
@@ -39,5 +41,13 @@ export class BoardsController {
   @Delete(':id')
   async deleteBoard(@Param('id') id: string) {
     return this.boardsService.deleteBoard(id);
+  }
+
+  @Put(':id')
+  async updateBoard(
+    @Param('id') id: string,
+    @Body() updateBoardDto: UpdateBoardDto,
+  ): Promise<Board> {
+    return this.boardsService.updateBoard(id, updateBoardDto);
   }
 }
