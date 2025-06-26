@@ -29,6 +29,7 @@ export class BoardsService {
       .findById(boardId)
       .populate({
         path: 'columns',
+        model: 'Column',
         options: { sort: { createdAt: 1 } },
         populate: {
           path: 'cards',
@@ -37,6 +38,8 @@ export class BoardsService {
         },
       })
       .exec();
+
+    // console.log('🔍 Populated board:', JSON.stringify(board, null, 2));
 
     if (!board) {
       throw new NotFoundException('Board không tồn tại');
