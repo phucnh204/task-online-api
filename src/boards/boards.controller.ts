@@ -7,6 +7,7 @@ import {
   Query,
   Delete,
   Put,
+  Patch,
 } from '@nestjs/common';
 import { BoardsService } from './boards.service';
 import { Board } from './schemas/board.schema';
@@ -49,5 +50,13 @@ export class BoardsController {
     @Body() updateBoardDto: UpdateBoardDto,
   ): Promise<Board> {
     return this.boardsService.updateBoard(id, updateBoardDto);
+  }
+
+  @Patch(':id/update-column-order')
+  updateColumnOrder(
+    @Param('id') boardId: string,
+    @Body('columnOrderIds') columnOrderIds: string[],
+  ) {
+    return this.boardsService.updateColumnOrder(boardId, columnOrderIds);
   }
 }

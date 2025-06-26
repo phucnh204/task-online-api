@@ -87,4 +87,13 @@ export class BoardsService {
 
     return updatedBoard;
   }
+
+  async updateColumnOrder(boardId: string, columnOrderIds: string[]) {
+    const board = await this.boardModel.findById(boardId);
+    if (!board) throw new NotFoundException('Board không tồn tại');
+
+    board.columnOrderIds = columnOrderIds;
+    await board.save();
+    return board;
+  }
 }

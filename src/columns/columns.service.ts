@@ -31,4 +31,27 @@ export class ColumnsService {
 
     return newColumn;
   }
+
+  async updateColumnTitle(columnId: string, newTitle: string): Promise<Column> {
+    const column = await this.columnModel.findById(columnId);
+    if (!column) {
+      throw new NotFoundException('Column không tồn tại');
+    }
+
+    column.title = newTitle;
+    await column.save();
+    return column;
+  }
+
+  async deleteColumn(columnId: string): Promise<{ deleted: boolean }> {
+    const column = await this.columnModel.findByIdAndDelete(columnId);
+
+    if (!column) {
+      throw new NotFoundException('Column not found');
+    }
+    await this.boardModel.findByIdAndUpdate(column.boardId, {
+      $pull: { columnOrderIds: columnId },
+    });
+    return { deleted: true };
+  }
 }
