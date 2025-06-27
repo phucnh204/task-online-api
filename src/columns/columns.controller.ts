@@ -1,5 +1,13 @@
 // src/columns/columns.controller.ts
-import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ColumnsService } from './columns.service';
 import { CreateColumnDto } from './dto/create-column.dto';
 import { Column } from './schemas/column.schema';
@@ -24,5 +32,10 @@ export class ColumnsController {
   @Delete(':id')
   async deleteColumn(@Param('id') id: string) {
     return this.columnsService.deleteColumn(id);
+  }
+
+  @Get('/:columnId')
+  getColumnWithCards(@Param('columnId') columnId: string) {
+    return this.columnsService.getColumnWithCards(columnId);
   }
 }
