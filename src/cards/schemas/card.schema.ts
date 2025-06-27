@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 
 export type CardDocument = Card & Document;
 
-@Schema({ timestamps: true, _id: false })
+@Schema({ timestamps: true })
 export class Card {
   @Prop({ required: true })
   title: string;
