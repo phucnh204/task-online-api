@@ -23,14 +23,14 @@ export class BoardsController {
     return this.boardsService.createBoard(createBoardDto);
   }
 
-  @Get()
-  findAll(): Promise<Board[]> {
-    return this.boardsService.findAll();
-  }
+  // @Get()
+  // findAll(): Promise<Board[]> {
+  //   return this.boardsService.findAll();
+  // }
 
   @Get(':id/full')
-  getFullBoard(@Param('id') id: string) {
-    return this.boardsService.getFullBoard(id);
+  getFullBoard(@Param('id') id: string, @Query('userId') userId: string) {
+    return this.boardsService.getFullBoard(id, userId);
   }
 
   @Get()

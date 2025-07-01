@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { Column } from 'src/columns/schemas/column.schema';
 
 export type BoardDocument = Board & Document;
@@ -16,11 +16,11 @@ export class Board {
   @Prop({ default: [] })
   columnOrderIds: string[];
 
-  @Prop({ default: [] })
-  ownerIds: string[];
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
+  ownerIds: Types.ObjectId[];
 
-  @Prop({ default: [] })
-  memberIds: string[];
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
+  memberIds: Types.ObjectId[];
 
   @Prop({ default: '#0079BF' })
   backgroundColor: string;

@@ -1,10 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Board, BoardDocument } from './schemas/board.schema';
 import { Column, ColumnDocument } from 'src/columns/schemas/column.schema';
 import { Card, CardDocument } from 'src/cards/schemas/card.schema';
 
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 
@@ -24,7 +28,7 @@ export class BoardsService {
     return this.boardModel.find();
   }
 
-  async getFullBoard(boardId: string) {
+  async getFullBoard(boardId: string, userId: string) {
     const board = await this.boardModel
       .findById(boardId)
       .populate({
@@ -39,10 +43,18 @@ export class BoardsService {
       })
       .exec();
 
-    // console.log('🔍 Populated board:', JSON.stringify(board, null, 2));
-
     if (!board) {
       throw new NotFoundException('Board không tồn tại');
+    }
+
+    // Kiểm tra quyền truy cập
+    const userObjectId = new Types.ObjectId(userId);
+
+    if (
+      !board.ownerIds.some((id) => id.equals(userObjectId)) &&
+      !board.memberIds.some((id) => id.equals(userObjectId))
+    ) {
+      throw new ForbiddenException('Bạn không có quyền truy cập board này');
     }
 
     return { board };
@@ -50,13 +62,20 @@ export class BoardsService {
 
   // Lấy danh sách board liên quan đến user
   async getBoardsOfUser(userId: string) {
-    const boards = await this.boardModel.find({
-      $or: [{ ownerIds: userId }, { memberIds: userId }],
+    const objectUserId = new Types.ObjectId(userId);
+    return this.boardModel.find({
+      $or: [{ ownerIds: objectUserId }, { memberIds: objectUserId }],
     });
-
-    return boards;
   }
   async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
+    createBoardDto.ownerIds = createBoardDto.ownerIds.map(
+      (id) => new Types.ObjectId(id),
+    );
+
+    createBoardDto.memberIds = (createBoardDto.memberIds || []).map(
+      (id) => new Types.ObjectId(id),
+    );
+
     const board = new this.boardModel(createBoardDto);
     return board.save();
   }
