@@ -11,6 +11,7 @@ import { Card, CardDocument } from 'src/cards/schemas/card.schema';
 import { Model, Types } from 'mongoose';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
+import { mapOrder } from 'src/utils/sort';
 
 @Injectable()
 export class BoardsService {
@@ -56,7 +57,11 @@ export class BoardsService {
     ) {
       throw new ForbiddenException('Bạn không có quyền truy cập board này');
     }
-
+    if (board && board.columns) {
+      board.columns.forEach((column) => {
+        column.cards = mapOrder(column.cards, column.cardOrderIds, '_id');
+      });
+    }
     return { board };
   }
 

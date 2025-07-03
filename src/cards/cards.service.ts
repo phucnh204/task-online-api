@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Card, CardDocument } from './schemas/card.schema';
 import { Model } from 'mongoose';
 import { CreateCardDto } from './dto/create-card.dto';
 import { Column, ColumnDocument } from '../columns/schemas/column.schema';
+import { mapOrder } from 'src/utils/sort';
 
 @Injectable()
 export class CardsService {
@@ -69,41 +70,63 @@ export class CardsService {
     newColumnId: string,
     newPosition?: number,
   ): Promise<Card> {
+    Logger.log(
+      `moveCard called: ${cardId} -> ${newColumnId} at ${newPosition}`,
+    );
+
     const card = await this.cardModel.findById(cardId);
     if (!card) throw new Error('Card not found');
 
     const oldColumnId = card.columnId;
+    const isSameColumn = oldColumnId.toString() === newColumnId.toString();
 
-    // 1. Xóa card khỏi column cũ (cardOrderIds và cards)
-    await this.columnModel.findByIdAndUpdate(oldColumnId, {
-      $pull: {
-        cardOrderIds: cardId,
-        cards: cardId,
+    if (!isSameColumn) {
+      await this.columnModel.findByIdAndUpdate(oldColumnId, {
+        $pull: {
+          cardOrderIds: cardId,
+          cards: cardId,
+        },
+      });
+    }
+
+    const newColumn = await this.columnModel.findById(newColumnId);
+    if (!newColumn) throw new Error('New column not found');
+
+    let cardOrderIds = (newColumn.cardOrderIds as string[]).filter(
+      (id) => id.toString() !== cardId,
+    );
+    let cards = (newColumn.cards as any[]).filter(
+      (id) => id.toString() !== card._id.toString(),
+    );
+
+    const insertAt =
+      typeof newPosition === 'number' ? newPosition : cardOrderIds.length;
+    cardOrderIds.splice(insertAt, 0, cardId);
+    cards.splice(insertAt, 0, card._id);
+
+    await this.columnModel.findByIdAndUpdate(newColumnId, {
+      $set: {
+        cardOrderIds,
+        cards,
       },
     });
 
-    // 2. Thêm card vào column mới (đúng vị trí)
-    const updateOperation =
-      newPosition !== undefined
-        ? {
-            $push: {
-              cardOrderIds: { $each: [cardId], $position: newPosition },
-              cards: { $each: [card._id], $position: newPosition },
-            },
-          }
-        : {
-            $push: {
-              cardOrderIds: cardId,
-              cards: card._id,
-            },
-          };
+    if (!isSameColumn) {
+      card.columnId = newColumnId;
+      await card.save();
+    }
 
-    await this.columnModel.findByIdAndUpdate(newColumnId, updateOperation);
-
-    // 3. Cập nhật columnId của card
-    card.columnId = newColumnId;
-    await card.save();
-
+    Logger.log(
+      `moveCard finished: ${cardId} -> ${newColumnId} at ${newPosition}`,
+    );
     return card;
+  }
+
+  async getColumnById(columnId: string) {
+    const column = await this.columnModel.findById(columnId).populate('cards');
+    if (column) {
+      column.cards = mapOrder(column.cards, column.cardOrderIds, '_id');
+    }
+    return column;
   }
 }
